@@ -13,13 +13,15 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // Don't protect public routes
+  // Don't protect public routes (exact matches)
   if (publicRoutes.includes(pathname)) {
     return NextResponse.next();
   }
 
-  // Also protect API routes that need auth
-  const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
+  // Check prefix matches for public routes, excluding root '/'
+  const isPublicRoute = publicRoutes
+    .filter((route) => route !== '/')
+    .some((route) => pathname.startsWith(route));
   if (isPublicRoute) {
     return NextResponse.next();
   }
