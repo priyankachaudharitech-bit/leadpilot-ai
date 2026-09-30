@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils/cn';
 import {
@@ -36,6 +37,16 @@ export function Sidebar() {
   const pathname = usePathname();
   const { open, close } = useSidebar();
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && open) {
+        close();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [open, close]);
+
   return (
     <>
       <aside
@@ -45,6 +56,7 @@ export function Sidebar() {
           'lg:translate-x-0',
           open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
         )}
+        aria-label="Sidebar navigation"
       >
         <div className="flex h-14 items-center justify-between px-4 border-b">
           <Link href="/dashboard" className="font-bold text-xl text-primary">
@@ -61,7 +73,7 @@ export function Sidebar() {
           </Button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto py-4">
+        <nav className="flex-1 overflow-y-auto py-4" aria-label="Main navigation">
           <ul className="space-y-1 px-2">
             {navigation.map((item) => {
               const isActive = item.exact
@@ -82,7 +94,7 @@ export function Sidebar() {
                       if (open) close();
                     }}
                   >
-                    <item.icon className="h-5 w-5" />
+                    <item.icon className="h-5 w-5" aria-hidden="true" />
                     {item.name}
                   </Link>
                 </li>
