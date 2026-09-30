@@ -8,6 +8,7 @@ export async function middleware(request: NextRequest) {
     ROUTES.register,
     ROUTES.forgotPassword,
     ROUTES.resetPassword,
+    '/auth/callback',
     '/',
   ];
 

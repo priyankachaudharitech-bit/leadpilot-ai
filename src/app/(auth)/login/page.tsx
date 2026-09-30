@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -7,14 +8,15 @@ import { z } from 'zod';
 import { loginSchema } from '@/lib/validations/schemas';
 import { useAuth } from '@/providers/AuthProvider';
 import { AuthLayout, Button, Input, Label } from '@/components/ui';
-import { Lock, Mail } from 'lucide-react';
+import { Lock, Mail, AlertCircle } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import { cn } from '@/lib/utils/cn';
+import { toast } from 'sonner';
 
 export default function LoginPage() {
   const { signIn } = useAuth();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get('redirectTo');
+  const redirectTo = searchParams.get('redirectTo') ?? '/dashboard';
+  const [error, setError] = useState<string | null>(null);
 
   const {
     register,
@@ -26,7 +28,14 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (data: z.infer<typeof loginSchema>) => {
-    await signIn(data.email, data.password);
+    setError(null);
+    try {
+      await signIn(data.email, data.password, redirectTo);
+    } catch (err: any) {
+      const message = err.message || 'Invalid email or password';
+      setError(message);
+      toast.error(message);
+    }
   };
 
   return (
@@ -38,6 +47,13 @@ export default function LoginPage() {
             Sign in to access your leads and AI insights
           </p>
         </div>
+
+        {error && (
+          <div className="flex items-center gap-2 p-3 text-sm text-error-500 bg-error-50 rounded-lg border border-error-200">
+            <AlertCircle className="h-4 w-4 flex-shrink-0" />
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
@@ -117,10 +133,6 @@ export default function LoginPage() {
             Create account
           </Link>
         </div>
-
-        {redirectTo && (
-          <input type="hidden" name="redirectTo" value={redirectTo} />
-        )}
       </div>
     </AuthLayout>
   );
